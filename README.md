@@ -140,3 +140,164 @@ La clase ya hace demasiadas cosas
 10. Si mañana decides que los errores no se imprimen sino que se lanzan como excepción, toca tocar varias partes del código.
 
 En ese “desastre”, irían pegadas a cada operación, porque es ahí donde tiene sentido matemático validarlas. Pero desde diseño, eso evidencia que la clase está violando responsabilidad única, porque ya no solo calcula: también controla flujo, interfaz y reglas de dominio.
+
+## Prompots 
+## 1. Los principios solid son un conjunto denormas que permiten seguir mejores practicas y tener un mejor codigo ahora necesito que siguiendo el principio single responsability de los solid, o sea que divide todas las tareas en clases o interfaces, para que cada cosa tenga una sola respondabilidad
+Listo, te lo separé por responsabilidades dentro del paquete solid.
+
+Te dejo el proyecto completo en .zip:
+Descargar calculadora_solid_srp.zip
+
+Y también la carpeta fuente:
+Ver carpeta solid_srp
+
+Quedó así, en esencia:
+
+Main.java → arranca el programa
+AplicacionCalculadora.java → controla el flujo general
+ConsolaEntrada.java → lee datos por consola
+MenuCalculadora.java → muestra el menú
+CalculadoraService.java → delega la ejecución
+OperacionBinaria.java y OperacionUnaria.java → interfaces
+Una clase por operación:
+Suma
+Resta
+Multiplicacion
+Division
+Modulo
+RaizCuadrada
+LogaritmoNatural
+
+Para correrlo:
+
+javac solid/*.java
+java solid.Main
+
+Y algo importante: las validaciones de dominio ya no quedaron “tiradas por todo lado”, sino dentro de la clase de cada operación, por ejemplo:
+
+Division valida que no sea cero
+LogaritmoNatural valida que el número sea mayor que cero
+RaizCuadrada valida que no sea negativo
+
+Eso encaja mucho mejor con Single Responsibility porque cada clase se encarga de una sola cosa.
+## 2. Hay un problema y es cuando quiero agregar una nueva operacion, por lo que no sig
+
+Listo, te dejé la versión modificada para que siga mucho mejor el Open/Closed Principle:
+
+Descargar calculadora_solid_ocp.zip
+Ver carpeta solid_ocp
+
+Qué cambié:
+
+eliminé el switch fijo
+eliminé el menú hardcodeado
+las operaciones ahora se descubren automáticamente dentro del paquete solid
+AplicacionCalculadora ya no depende de Suma, Resta, Division, etc.
+
+Ahora, para agregar una operación nueva, haces solo esto:
+
+creas una clase nueva en solid
+implementas OperacionBinaria o OperacionUnaria
+recompilas
+
+Y ya aparece en el menú sin tocar:
+
+AplicacionCalculadora
+MenuCalculadora
+CalculadoraService
+
+Ejemplo de nueva operación:
+
+package solid;
+
+public class Potencia implements OperacionBinaria {
+    @Override
+    public String getNombre() {
+        return "Potencia";
+    }
+
+    @Override
+    public double calcular(int a, int b) {
+        return Math.pow(a, b);
+    }
+}
+
+Compilación y ejecución:
+
+javac solid/*.java
+java solid.Main
+
+Ojo con una cosa: esta solución descubre automáticamente clases del paquete solid desde archivos compilados locales, así que para tu proyecto de consola está bien y cumple bastante mejor con OCP.
+
+3. El principio de Liskov 
+Ya se completa ya que cualquier clase que implemente Operacion puede reemplazar a otra sin romper el sistema.
+
+Por ejemplo, Suma, Resta, Division, LogaritmoNatural, etc. se usan todas como Operacion.
+
+Eso está bien.
+
+4. Interface Segregation Principle
+Este principio tambien se cumple debido a que se separo:
+
+* Operacion
+* OperacionBinaria
+* OperacionUnaria
+
+Eso evita obligar a una operación unaria a implementar lógica de dos operandos.
+Entonces este también sí se cumple razonablemente bien.
+
+5. Ahora generame un paquete nuevo que reduzca estas dependencias para seguir el principio
+
+Voy a partir del paquete que ya tenías con OCP y le bajo el acoplamiento metiendo interfaces para entrada, salida, catálogo y carga de operaciones.Ya ubiqué el acoplamiento fuerte: la app depende de clases concretas de consola, menú, catálogo y descubridor. En esta nueva versión la aplicación principal solo va a conocer interfaces.Thought for 1m 16sListo, te generé un paquete nuevo con menos dependencias directas para seguir mucho mejor el Dependency Inversion Principle.
+Archivos:
+
+
+Descargar calculadora_solid_dip.zip
+
+
+Ver carpeta soliddip
+
+
+Ahora la clase principal AplicacionCalculadora depende de abstracciones, no de implementaciones concretas:
+
+
+Entrada
+
+
+Salida
+
+
+VistaMenu
+
+
+ServicioCalculadora
+
+
+CatalogoOperaciones
+
+
+Y las implementaciones concretas quedaron aparte:
+
+
+EntradaConsola
+
+
+SalidaConsola
+
+
+MenuCalculadora
+
+
+ServicioCalculadoraBasico
+
+
+CatalogoOperacionesMemoria
+
+
+DescubridorOperacionesPaquete
+
+
+Entonces ya no queda amarrada directamente a consola, menú o catálogo específicos.
+Para compilar y ejecutar:
+javac soliddip/*.javajava soliddip.Main
+Si quieres, el siguiente paso puede ser que te explique exactamente qué dependencias se redujeron y por qué ahora sí sigue mejor DIP.

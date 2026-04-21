@@ -1,6 +1,7 @@
-package solid;
+package soliddip;
 
-public class CalculadoraService {
+public class ServicioCalculadoraBasico implements ServicioCalculadora {
+    @Override
     public double ejecutar(Operacion operacion, int[] operandos) {
         return operacion.calcular(operandos);
     }

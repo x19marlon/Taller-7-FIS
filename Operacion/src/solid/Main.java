@@ -1,11 +1,25 @@
-package solid;
+package soliddip;
+
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        ConsolaEntrada consolaEntrada = new ConsolaEntrada();
-        MenuCalculadora menu = new MenuCalculadora();
-        CalculadoraService calculadoraService = new CalculadoraService();
-        AplicacionCalculadora app = new AplicacionCalculadora(consolaEntrada, menu, calculadoraService);
+        CargadorOperaciones cargadorOperaciones = new DescubridorOperacionesPaquete("soliddip");
+        List<Operacion> operaciones = cargadorOperaciones.cargar();
+
+        CatalogoOperaciones catalogo = new CatalogoOperacionesMemoria(operaciones);
+        Salida salida = new SalidaConsola();
+        Entrada entrada = new EntradaConsola(salida);
+        VistaMenu menu = new MenuCalculadora(catalogo, salida);
+        ServicioCalculadora servicioCalculadora = new ServicioCalculadoraBasico();
+
+        AplicacionCalculadora app = new AplicacionCalculadora(
+                entrada,
+                salida,
+                menu,
+                servicioCalculadora,
+                catalogo);
+
         app.ejecutar();
     }
 }

@@ -1,80 +1,74 @@
-package solid;
+package soliddip;
 
 public class AplicacionCalculadora {
-    private final ConsolaEntrada consolaEntrada;
-    private final MenuCalculadora menu;
-    private final CalculadoraService calculadoraService;
+    private final Entrada entrada;
+    private final Salida salida;
+    private final VistaMenu menu;
+    private final ServicioCalculadora servicioCalculadora;
+    private final CatalogoOperaciones catalogo;
 
-    public AplicacionCalculadora(ConsolaEntrada consolaEntrada, MenuCalculadora menu, CalculadoraService calculadoraService) {
-        this.consolaEntrada = consolaEntrada;
+    public AplicacionCalculadora(
+            Entrada entrada,
+            Salida salida,
+            VistaMenu menu,
+            ServicioCalculadora servicioCalculadora,
+            CatalogoOperaciones catalogo) {
+        this.entrada = entrada;
+        this.salida = salida;
         this.menu = menu;
-        this.calculadoraService = calculadoraService;
+        this.servicioCalculadora = servicioCalculadora;
+        this.catalogo = catalogo;
     }
 
     public void ejecutar() {
+        if (catalogo.estaVacio()) {
+            salida.mostrar("No hay operaciones disponibles.");
+            entrada.cerrar();
+            return;
+        }
+
         int opcion;
 
         do {
             menu.mostrar();
-            opcion = consolaEntrada.leerEntero("Elige una opción: ");
+            opcion = entrada.leerEntero("Elige una opción: ");
             procesarOpcion(opcion);
-            System.out.println();
+            salida.mostrar("");
         } while (opcion != 0);
 
-        consolaEntrada.cerrar();
+        entrada.cerrar();
     }
 
     private void procesarOpcion(int opcion) {
-        switch (opcion) {
-            case 1:
-                ejecutarOperacionBinaria(new Suma());
-                break;
-            case 2:
-                ejecutarOperacionBinaria(new Resta());
-                break;
-            case 3:
-                ejecutarOperacionBinaria(new Multiplicacion());
-                break;
-            case 4:
-                ejecutarOperacionBinaria(new Division());
-                break;
-            case 5:
-                ejecutarOperacionBinaria(new Modulo());
-                break;
-            case 6:
-                ejecutarOperacionUnaria(new RaizCuadrada());
-                break;
-            case 7:
-                ejecutarOperacionUnaria(new LogaritmoNatural());
-                break;
-            case 0:
-                System.out.println("Saliendo de la calculadora...");
-                break;
-            default:
-                System.out.println("Opción no válida.");
+        if (opcion == 0) {
+            salida.mostrar("Saliendo de la calculadora...");
+            return;
+        }
+
+        Operacion operacion = catalogo.buscarPorOpcion(opcion);
+
+        if (operacion == null) {
+            salida.mostrar("Opción no válida.");
+            return;
+        }
+
+        int[] operandos = leerOperandos(operacion.getCantidadOperandos());
+
+        try {
+            double resultado = servicioCalculadora.ejecutar(operacion, operandos);
+            salida.mostrar("Resultado: " + resultado);
+        } catch (IllegalArgumentException e) {
+            salida.mostrar("Error: " + e.getMessage());
         }
     }
 
-    private void ejecutarOperacionBinaria(OperacionBinaria operacion) {
-        int a = consolaEntrada.leerEntero("Ingresa el primer número entero: ");
-        int b = consolaEntrada.leerEntero("Ingresa el segundo número entero: ");
+    private int[] leerOperandos(int cantidadOperandos) {
+        int[] operandos = new int[cantidadOperandos];
 
-        try {
-            double resultado = calculadoraService.ejecutarOperacionBinaria(operacion, a, b);
-            System.out.println("Resultado: " + resultado);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
+        for (int i = 0; i < cantidadOperandos; i++) {
+            operandos[i] = entrada.leerEntero("Ingresa el operando " + (i + 1) + ": ");
         }
-    }
 
-    private void ejecutarOperacionUnaria(OperacionUnaria operacion) {
-        int n = consolaEntrada.leerEntero("Ingresa un número entero: ");
-
-        try {
-            double resultado = calculadoraService.ejecutarOperacionUnaria(operacion, n);
-            System.out.println("Resultado: " + resultado);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+        return operandos;
     }
 }
